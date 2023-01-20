@@ -9,6 +9,9 @@ import uuid
 from django.shortcuts import HttpResponseRedirect
 from App_Blog.forms import CommentForm
 
+class MyBlogs(LoginRequiredMixin, TemplateView):
+    template_name = 'App_Blog/my_blogs.html'
+
 class BlogList(ListView):
     model = Blog
     template_name = 'App_Blog/blog_list.html'
@@ -27,6 +30,14 @@ class CreateBlog(LoginRequiredMixin, CreateView):
         blog_obj.save()
         return HttpResponseRedirect(reverse('index'))
 
+class UpdateBlog(UpdateView):
+    model = Blog
+    fields = ("blog_title", "blog_content", "blog_image")
+    template_name = 'App_Blog/edit_blog.html'
+    
+    def get_success_url(self, **kwargs):
+        return reverse_lazy("App_Blog:blog_details", kwargs={'slug':self.object.slug})
+        
 def blog_details(request, slug):
     blog = Blog.objects.get(slug=slug)
     comment_form = CommentForm()
@@ -65,4 +76,3 @@ def unliked(request, pk):
     already_liked.delete()
 
     return HttpResponseRedirect(reverse('App_Blog:blog_details', kwargs={'slug': blog.slug}))
-
